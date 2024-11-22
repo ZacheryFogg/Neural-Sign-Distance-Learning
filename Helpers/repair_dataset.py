@@ -32,8 +32,6 @@ def repair_off_files(dataset_dir):
                     # Write the repaired file back
                     with open(file_path, 'w') as f:
                         f.writelines(lines)
-                print(f"Checked and repaired (if needed): {file_path}")
-
-# Example usage
+                        
 dataset_dir = "../ModelNet40"
 repair_off_files(dataset_dir)

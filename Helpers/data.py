@@ -6,14 +6,14 @@ import open3d as o3d
 
 class PointCloudDataset(Dataset):
     def __init__(self,base_dir, point_cloud_size = 5000, split = 'train'):
-
+        
         self.point_cloud_size = point_cloud_size
         self.point_clouds = None
         self.split = split
         self.base_dir = base_dir
 
         self.files = self.get_file_paths(self.split, self.base_dir)
-        self.point_clouds = self.get_uniform_point_clouds(self.split)
+        self.point_clouds = self.get_uniform_point_clouds()
 
 
     def __len__(self):
@@ -34,16 +34,17 @@ class PointCloudDataset(Dataset):
             for file in files:
                 if file.endswith('.off'):
                     full_path = os.path.join(root, file)
-                    if f'/{split}/' in full_path:
+                    if f'{split}' in full_path:
                         file_paths.append(full_path)
+        print(len(file_paths))
         return file_paths
     
     
-    def get_uniform_point_clouds(self, split):
+    def get_uniform_point_clouds(self):
         '''
         Return a tensor that is all point clouds of fixed size
         '''
-
+        
         point_clouds_list = []
         for file in self.files: 
             mesh = o3d.io.read_triangle_mesh(file)

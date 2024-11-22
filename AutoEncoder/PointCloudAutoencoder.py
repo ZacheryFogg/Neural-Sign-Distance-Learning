@@ -2,7 +2,15 @@ import torch
 from torch.utils.data import DataLoader,TensorDataset
 import torch.nn as nn
 import torch.optim as optim
-import PointCloudOpen3d as pc
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path.cwd().parent))
+
+from Helpers.data import PointCloudDataset
+# import PointCloudOpen3d as pc
+import Helpers.PointCloudOpen3d as pc
+
 import numpy as np
 
 class PointCloudAutoencoder(nn.Module):
@@ -28,7 +36,7 @@ class PointCloudAutoencoder(nn.Module):
 
 
 
-file_path = "ModelNet40/cup/train/cup_0001.off" 
+file_path = "../ModelNet40/cup/train/cup_0001.off" 
 num_vertices, vertices = pc.get_off_vertices(file_path)
 # Convert vertices to a NumPy array
 # TODO: Add padding to point clouds with less vertices less than input_dim

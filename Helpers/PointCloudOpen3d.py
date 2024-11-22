@@ -42,7 +42,7 @@ def visualize_point_cloud(point_cloud):
     """
     o3d.visualization.draw_geometries([point_cloud])
 
-file_path = "ModelNet40/cup/train/cup_0001.off"  # Replace with your .off file path
+file_path = "../ModelNet40/cup/train/cup_0001.off"  # Replace with your .off file path
 num_vertices, vertices = get_off_vertices(file_path)
 point_cloud = get_point_cloud(vertices)
 

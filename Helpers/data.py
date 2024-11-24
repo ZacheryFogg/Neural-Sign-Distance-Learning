@@ -44,7 +44,14 @@ class PointCloudDataset(Dataset):
                             file_paths.append(full_path)
         return file_paths
     
-    
+    def norm(self, x):
+        x_min = x.min()
+        x_max = x.max()
+
+        x_norm = (x - x_min) / (x_max - x_min)
+        
+        return x_norm
+
     def get_uniform_point_clouds(self):
         '''
         Return a tensor that is all point clouds of fixed size
@@ -55,7 +62,8 @@ class PointCloudDataset(Dataset):
             mesh = o3d.io.read_triangle_mesh(file)
             try: 
                 sampled_point_cloud = mesh.sample_points_uniformly(number_of_points = self.point_cloud_size)
-                point_clouds_list.append(torch.tensor(np.asanyarray(sampled_point_cloud.points) ,dtype = torch.float32))
+                point_clouds_list.append(self.norm(torch.tensor(np.asanyarray(sampled_point_cloud.points) ,dtype = torch.float32)))
+            
             except RuntimeError: # Some .OFF files are damaged, run repair script
                 print(f'Damaged file: {file}')
 

@@ -2,3 +2,4 @@ ModelNet40/
 Data/
 .DS_Store
 AutoEncoder/trained_models
+.ipynb_checkpoints

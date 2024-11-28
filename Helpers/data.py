@@ -3,10 +3,10 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import open3d as o3d
+from .dataset_helpers import encode_point_cloud
 
 class PointCloudDataset(Dataset):
     def __init__(self,base_dir, point_cloud_size = 5000, split = 'train', object_classes = None):
-        
         self.point_cloud_size = point_cloud_size
         self.point_clouds = None
         self.split = split
@@ -62,8 +62,9 @@ class PointCloudDataset(Dataset):
             mesh = o3d.io.read_triangle_mesh(file)
             try: 
                 sampled_point_cloud = mesh.sample_points_uniformly(number_of_points = self.point_cloud_size)
-                point_clouds_list.append(self.norm(torch.tensor(np.asanyarray(sampled_point_cloud.points) ,dtype = torch.float32)))
-            
+                points = np.asanyarray(sampled_point_cloud.points)
+                ordered_points = encode_point_cloud(points, num_bits=10)
+                point_clouds_list.append(self.norm(torch.tensor(ordered_points ,dtype = torch.float32)))
             except RuntimeError: # Some .OFF files are damaged, run repair script
                 print(f'Damaged file: {file}')
 

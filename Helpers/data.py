@@ -5,13 +5,14 @@ import numpy as np
 import open3d as o3d
 
 class PointCloudDataset(Dataset):
-    def __init__(self,base_dir, point_cloud_size = 5000, split = 'train', object_classes = None):
+    def __init__(self,base_dir, point_cloud_size = 5000, split = 'train', object_classes = None, order_points = True):
         
         self.point_cloud_size = point_cloud_size
         self.point_clouds = None
         self.split = split
         self.base_dir = base_dir
         self.object_classes = object_classes
+        self.order_points = order_points
 
         self.files = self.get_file_paths()
         self.point_clouds = self.get_uniform_point_clouds()
@@ -51,6 +52,32 @@ class PointCloudDataset(Dataset):
         x_norm = (x - x_min) / (x_max - x_min)
         
         return x_norm
+    
+    def interleave_bits(self, x, y, z, num_bits=10):
+        morton_code = 0
+        for i in range(num_bits):
+            morton_code |= ((x >> i) & 1) << (3 * i)
+            morton_code |= ((y >> i) & 1) << (3 * i + 1)
+            morton_code |= ((z >> i) & 1) << (3 * i + 2)
+        return morton_code
+
+    def encode_point_cloud(self, points, num_bits=10):
+        morton_codes = []
+        min_coords = points.min(axis=0)
+        max_coords = points.max(axis=0)
+        range_coords = max_coords - min_coords
+        scaled_points = ((points - min_coords) / range_coords) #scales points on range [0, 1]
+        scaled_points = (scaled_points * (2**num_bits - 1)).astype(int) # scales points to [0, 2^num_bits]
+        
+        for p in scaled_points:
+            x, y, z = p
+            morton_code = self.interleave_bits(x, y, z, num_bits)
+            morton_codes.append(morton_code)
+        
+        sorted_indices = np.argsort(morton_codes)
+        sorted_points = points[sorted_indices]
+        
+        return sorted_points
 
     def get_uniform_point_clouds(self):
         '''
@@ -62,7 +89,10 @@ class PointCloudDataset(Dataset):
             mesh = o3d.io.read_triangle_mesh(file)
             try: 
                 sampled_point_cloud = mesh.sample_points_uniformly(number_of_points = self.point_cloud_size)
-                point_clouds_list.append(self.norm(torch.tensor(np.asanyarray(sampled_point_cloud.points) ,dtype = torch.float32)))
+                points = np.asanyarray(sampled_point_cloud.points)
+                if self.order_points:
+                    points = self.encode_point_cloud(points, num_bits=10)
+                point_clouds_list.append(self.norm(torch.tensor(points ,dtype = torch.float32)))
             
             except RuntimeError: # Some .OFF files are damaged, run repair script
                 print(f'Damaged file: {file}')

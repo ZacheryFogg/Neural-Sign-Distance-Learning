@@ -3,6 +3,7 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 import open3d as o3d
+from .dataset_helpers import encode_point_cloud
 
 class PointCloudDataset(Dataset):
     def __init__(self,base_dir, point_cloud_size = 5000, split = 'train', object_classes = None, order_points = True):

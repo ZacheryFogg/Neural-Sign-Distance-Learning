@@ -30,3 +30,28 @@ def GetDataLoaders(npArray, batch_size, train_set_percentage = 0.9, shuffle=True
     
     return train_loader, test_loader
 
+def interleave_bits(x, y, z, num_bits=10):
+    morton_code = 0
+    for i in range(num_bits):
+        morton_code |= ((x >> i) & 1) << (3 * i)
+        morton_code |= ((y >> i) & 1) << (3 * i + 1)
+        morton_code |= ((z >> i) & 1) << (3 * i + 2)
+    return morton_code
+
+def encode_point_cloud(points, num_bits=10):
+    morton_codes = []
+    min_coords = points.min(axis=0)
+    max_coords = points.max(axis=0)
+    range_coords = max_coords - min_coords
+    scaled_points = ((points - min_coords) / range_coords) #scales points on range [0, 1]
+    scaled_points = (scaled_points * (2**num_bits - 1)).astype(int) # scales points to [0, 2^num_bits]
+    
+    for p in scaled_points:
+        x, y, z = p
+        morton_code = interleave_bits(x, y, z, num_bits)
+        morton_codes.append(morton_code)
+    
+    sorted_indices = np.argsort(morton_codes)
+    sorted_points = points[sorted_indices]
+    
+    return sorted_points

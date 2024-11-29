@@ -14,7 +14,7 @@ available_models = {
     },
 }
 
-class PointCloudAutoEncoder(nn.Module):
+class PointCloudAutoEncoder(torch.nn.Module):
 
     def __init__(self, model_type):
         super().__init__()

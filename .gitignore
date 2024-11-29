@@ -3,3 +3,6 @@ Data/
 .DS_Store
 AutoEncoder/trained_models
 .ipynb_checkpoints
+chair_set.npy
+AutoEncoder/__pycache__/
+Helpers/__pycache__/

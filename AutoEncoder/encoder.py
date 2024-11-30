@@ -1,9 +1,9 @@
 import torch 
-import models
+import AutoEncoder.autoencoders as autoencoders
 
 available_models = {
     '4700T' : {
-        'path': './trained_models/ConvEnc_LinDec/ConvAutoEncoder_ModelNet40_4700T',
+        'path': './trained_models/ConvEnc_LinDec/ConvAutoEncoder_ModelNet40_4700T_save',
         'point_size' : 2048,
         'latent_size' : 512
     },
@@ -52,8 +52,8 @@ class PointCloudAutoEncoder(torch.nn.Module):
         weight_path = available_models[model_type]['path']
 
         if model_type == '4700T':
-            self.encoder = models.ConvEncoder_4700T(point_size, latent_size)
+            self.encoder = autoencoders.ConvEncoder_4700T(point_size, latent_size)
         elif model_type == '3200T':
-            self.encoder = models.ConvEncoder_3200T(point_size=point_size, latent_size= latent_size)
+            self.encoder = autoencoders.ConvEncoder_3200T(point_size=point_size, latent_size= latent_size)
         
         self.load_weights_from_pretrained(self.encoder, weight_path)

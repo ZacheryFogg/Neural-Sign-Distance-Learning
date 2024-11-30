@@ -1,7 +1,7 @@
 ModelNet40/
 Data/
 .DS_Store
-AutoEncoder/trained_models
+AutoEncoder/trained_autoencoders
 .ipynb_checkpoints
 chair_set.npy
 AutoEncoder/__pycache__/

@@ -1,26 +1,53 @@
 import torch 
-import AutoEncoder.autoencoders as autoencoders
+import AutoEncoder.autoencoders as ae
 
 available_models = {
-    '4700T' : {
-        'path': './trained_models/ConvEnc_LinDec/ConvAutoEncoder_ModelNet40_4700T_save',
-        'point_size' : 2048,
-        'latent_size' : 512
+    '3072' : {
+        '6800T' : {
+            'path': '3072_512/Conv_6800T',
+            'point_size' : 3072,
+            'latent_size' : 512
+        },
+        'MLP' : {
+            'path': '3072_512/MLP',
+            'point_size' : 3072,
+            'latent_size' : 512
+        },
+        '800T' : {
+            'path': '3072_512/Conv_800T',
+            'point_size' : 3072,
+            'latent_size' : 512
+        },
     },
-    '3200T' : {
-        'path': './trained_models/ConvEnc_LinDec/ConvAutoEncoder_ModelNet40_3200T',
-        'point_size' : 2048,
-        'latent_size' : 512
-    },
+    '1024' : {
+        '6800T' : {
+            'path': '1024_256/Conv_6800T',
+            'point_size' : 1024,
+            'latent_size' : 256
+        },
+        'MLP' : {
+            'path': '1024_256/MLP',
+            'point_size' : 1024,
+            'latent_size' : 256
+        },
+        '800T' : {
+            'path': '1024_256/Conv_800T',
+            'point_size' : 1024,
+            'latent_size' : 256
+        },
+    }
 }
 
 class PointCloudAutoEncoder(torch.nn.Module):
 
-    def __init__(self, model_type):
+    def __init__(self, model_type, point_size, path_to_weight_dir = './'):
         super().__init__()
 
         self.encoder = None 
-        self.set_encoder(model_type)
+        self.point_size = point_size
+        self.model_type = model_type
+        self.path_to_weight_dir = path_to_weight_dir
+        self.set_encoder()
 
     def forward(self, x):
         return self.encoder(x)
@@ -45,15 +72,22 @@ class PointCloudAutoEncoder(torch.nn.Module):
                 enc_sd[keys[1]].copy_(full_model_sd[keys[0]])
 
 
-    def set_encoder(self, model_type):
+    def set_encoder(self):
 
-        point_size = available_models[model_type]['point_size']
-        latent_size = available_models[model_type]['latent_size']
-        weight_path = available_models[model_type]['path']
 
-        if model_type == '4700T':
-            self.encoder = autoencoders.ConvEncoder_4700T(point_size, latent_size)
-        elif model_type == '3200T':
-            self.encoder = autoencoders.ConvEncoder_3200T(point_size=point_size, latent_size= latent_size)
-        
+        point_size = available_models[self.point_size][self.model_type]['point_size']
+        latent_size = available_models[self.point_size][self.model_type]['latent_size']
+        path = available_models[self.point_size][self.model_type]['path']
+
+        if self.model_type == '6800T':
+            self.encoder = ae.ConvEncoder_6800T(point_size, latent_size)
+        elif self.model_type == 'MLP':
+            self.encoder = ae.MLPEncoder(point_size, latent_size)
+        elif self.model_type == '800T':
+            self.encoder = ae.ConvEncoder_800T(point_size, latent_size)
+        else: 
+            self.encoder = ae.ConvEncoder_800T(point_size, latent_size)
+
+        weight_path = self.path_to_weight_dir + 'trained_autoencoders/' + path
+        print(weight_path)
         self.load_weights_from_pretrained(self.encoder, weight_path)

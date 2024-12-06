@@ -12,7 +12,6 @@ class SDFRegressionModel(nn.Module):
 
     def forward(self, x, latent):
         x = torch.cat((x, latent), dim=1)
-        print(x.shape)
         x = self.relu(self.fc1(x))
         x = self.relu(self.fc2(x))
         x = self.fc3(x)

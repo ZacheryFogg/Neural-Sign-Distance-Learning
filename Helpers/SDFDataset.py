@@ -6,9 +6,7 @@ from torch.utils.data import Dataset
 import open3d as o3d
 
 class SDFDataset(Dataset):
-    def __init__(self,base_dir, latent_rep, split = 'train', object_classes = None):
-        
-        self.latent_rep = latent_rep
+    def __init__(self,base_dir, split='train', object_classes = None):
         self.base_dir=base_dir
         self.split = split
         self.train_split_pct=0.8

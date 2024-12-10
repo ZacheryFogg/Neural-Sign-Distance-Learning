@@ -5,6 +5,8 @@ import numpy as np
 from torch.utils.data import Dataset
 import open3d as o3d
 
+'''PyTorch Dataset class that stores SDF testing points (x,y,z) and their corresponding labels.
+Labels are the signed distances between (x,y,z) and the corresponding point cloud in off file.'''
 class SDFDataset(Dataset):
     def __init__(self,base_dir, split='train', object_classes = None):
         self.base_dir=base_dir
@@ -14,7 +16,7 @@ class SDFDataset(Dataset):
         self.object_classes = object_classes
         self.class_to_paths = self.get_class_to_file_paths_map()
         self.files = self.get_file_paths()
-        self.points, self.labels = self.get_point_clouds_and_labels()
+        self.points, self.labels = self.get_sdf_points_and_labels()
 
     def __len__(self):
         return len(self.points)
@@ -56,18 +58,18 @@ class SDFDataset(Dataset):
     def get_file_paths(self):
         return [file_path for _, file_paths in self.class_to_paths.items() for file_path in file_paths]    
     
-    def get_point_clouds_and_labels(self):
+    def get_sdf_points_and_labels(self):
         '''
-        Return two tensors for point clouds and sdfs
+        Return two tensors for sdf point and sdf labels
         '''
         point_clouds_list = []
         sdf_list = []
         file = self.files[1]
         for file in self.files: 
-            point_cloud_data_and_labels = np.loadtxt(file, skiprows=1,delimiter=' ', dtype=np.float32) 
-            point_cloud_data = point_cloud_data_and_labels[:,0:3]
-            point_cloud_labels = point_cloud_data_and_labels[:,3]
-            point_clouds_list.append(torch.tensor(point_cloud_data ,dtype = torch.float32))
+            point_data_and_labels = np.loadtxt(file, skiprows=1,delimiter=' ', dtype=np.float32) 
+            point_data = point_data_and_labels[:,0:3]
+            point_cloud_labels = point_data_and_labels[:,3]
+            point_clouds_list.append(torch.tensor(point_data ,dtype = torch.float32))
             sdf_list.append(torch.tensor(point_cloud_labels ,dtype = torch.float32))
             # PointCloudOpen3d.visualize_point_cloud(get_point_cloud(point_cloud_data))
             # print(points_and_labels)

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from torch.utils.data import Dataset, DataLoader, Subset
+from torch.utils.data import ConcatDataset, DataLoader, Subset
 import sys
 from pathlib import Path
 sys.path.append(str(Path.cwd().parent))
@@ -33,26 +33,17 @@ latent_shape = 512
 encoder = PointCloudAutoEncoder(model_type= '800T', point_size= str(point_size), path_to_weight_dir= '../AutoEncoder/')
 encoder.eval() # Let torch know that it doesn't need to store activations as there will be no backward pass
 
-# DataLoaders
+# Combined PC and SDF Dataset and DataLoader
 object_classes=['airplane']
-
-base_dir='sampled_vdbs/sampled_vdbs'
-train_sdf_dataset = SDFDataset(base_dir, object_classes=object_classes)
-sdf_train_loader= DataLoader(train_sdf_dataset, batch_size = 64, shuffle = False)
-
-train_dataset_3072 = PointCloudDataset("../../Data/ModelNet40", 3072, 'train', object_classes = object_classes)
-train_loader_3072 = DataLoader(train_dataset_3072, batch_size = 64, shuffle = False)
-
-# Load And Save DataLoaders
 # object_classes=['airplane','bathtub','bed','bench','bookshelf','bottle','car']
-# torch.save(train_sdf_dataset, 'train_sdf_dataset_airplanes')   
-# train_sdf_dataset = torch.load('train_sdf_dataset_airplanes', weights_only = False)
-# test_sdf_dataset = SDFDataset(base_dir, split='test',object_classes=object_classes)
-# sdf_test_loader = DataLoader(test_sdf_dataset, batch_size = 128, shuffle = False)
+sdf_base_dir='sampled_vdbs/sampled_vdbs'
+point_cloud_base_dir= "../../Data/ModelNet40"
+dataset = SDFDataset(sdf_base_dir, point_cloud_base_dir, 3072, 'test', object_classes)
+dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
 
-# train_dataset_3072 = torch.load('train_dataset_3072_airplanes', weights_only = False)
-# torch.save(train_dataset_3072, 'train_dataset_3072_airplanes')   
-# test_dataset_3072 = PointCloudDataset("../Data/ModelNet40", 3072, 'test', object_classes = object_classes)
+# Save Dataset and Load DataLoader
+# torch.save(dataset, 'combined_dataset')
+# dataloader=torch.load('combined_dataset', weights_only=False)
 
 # Model, Loss, Optimizer
 model = SDFRegressionModel(input_dim, latent_dim, hidden_dim).to(device)
@@ -62,10 +53,10 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 # Training Loop
 for epoch in range(num_epochs):
     latent_reps = []
-    for sample_sdf, point_cloud in zip(sdf_train_loader, train_loader_3072):
+    for data in dataloader:
         point_cloud_filenames = [] # Removes filename directory and extension
         # This loop ensures that the point cloud filename corresponds to the sdf filename, with dir and ext info removed
-        for path_to_pc, path_to_sdf in zip(point_cloud['filename'], sample_sdf['filename']):
+        for path_to_pc, path_to_sdf in zip(data['pc_filename'], data['sdf_filename']):
             pc_filename = path_to_pc.split('/')[-1].split('.')[0]
             sdf_filename = path_to_sdf.split('/')[-1].split('.')[0]
             # print(f'{pc_filename} {sdf_filename}')
@@ -73,14 +64,15 @@ for epoch in range(num_epochs):
                 print(f"PointCloudDataset {pc_filename} and SDFDataset {sdf_filename} filenames need to correspond")
                 break
             
-        if point_cloud['points'].shape[0] == 64:
-            point_cloud = point_cloud['points'].permute(0,2,1)
+        sample_sdf, point_cloud, sdf_labels = data['sdf_points'], data['point_clouds'], data['sdf_labels']
+        if point_cloud.shape[0] == 64:
+            point_cloud = point_cloud.permute(0,2,1)
             latent_rep = encoder(point_cloud)
             latent_rep = latent_rep.unsqueeze(1).repeat(1, 10000, 1).to(device)
             # print(latent_rep.shape)
-            sdf_point=sample_sdf['points'].to(device)
+            sdf_point=sample_sdf.to(device)
             # print(sdf_point.shape)
-            labels = sample_sdf['labels'].to(device) # Shape (10000,1)
+            labels = sdf_labels.to(device) # Shape (10000,1)
             # print(labels.shape)# shape (64,10000)
 
             optimizer.zero_grad()

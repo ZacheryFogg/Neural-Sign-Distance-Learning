@@ -188,7 +188,7 @@ class SDDataset(Dataset):
 
             if name in self.file_names:
 
-                line = np.loadtxt(path, skiprows=1, delimiter = ' ', dtype=np.float16)
+                line = np.loadtxt(path, skiprows=1, delimiter = ' ', dtype=np.float32)
                 points = torch.tensor(line[:self.num_xyzs, 0:3])
                 sds = torch.tensor(line[:self.num_xyzs,3])
 

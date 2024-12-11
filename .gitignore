@@ -6,3 +6,4 @@ AutoEncoder/trained_autoencoders
 chair_set.npy
 AutoEncoder/__pycache__/
 Helpers/__pycache__/
+trained_sdf_models/

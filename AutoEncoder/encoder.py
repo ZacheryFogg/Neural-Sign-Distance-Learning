@@ -89,5 +89,4 @@ class PointCloudAutoEncoder(torch.nn.Module):
             self.encoder = ae.ConvEncoder_800T(point_size, latent_size)
 
         weight_path = self.path_to_weight_dir + 'trained_autoencoders/' + path
-        print(weight_path)
         self.load_weights_from_pretrained(self.encoder, weight_path)

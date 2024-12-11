@@ -9,7 +9,7 @@ sys.path.append(str(Path.cwd().parent))
 
 from AutoEncoder.encoder import PointCloudAutoEncoder
 from Helpers.SDFDataset import SDFDataset
-from Helpers.PointCloudDataset import PointCloudDataset
+from Helpers.data import PointCloudDataset
 from sdf_models import SDFRegressionModel
 
 # Hyperparameters
@@ -39,7 +39,7 @@ object_classes=['airplane']
 sdf_base_dir='sampled_vdbs/sampled_vdbs'
 point_cloud_base_dir= "../../Data/ModelNet40"
 dataset = SDFDataset(sdf_base_dir, point_cloud_base_dir, 3072, 'test', object_classes)
-dataloader = DataLoader(dataset, batch_size=64, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=64, shuffle=False)
 
 # Save Dataset and Load DataLoader
 # torch.save(dataset, 'combined_dataset')

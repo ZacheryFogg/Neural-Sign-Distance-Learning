@@ -55,7 +55,7 @@ val_report_rate = 30000 # How often should we calculate the validation metrics.
 def calculate_acc(logits, targets): 
     preds = torch.round(torch.sigmoid(logits))
     correct = (preds == targets).float() 
-    accuracy = torch.sum(correct) / (correct.shape[0])
+    accuracy = torch.sum(correct) / (targets.shape[0])
     return accuracy.item()
 
 
@@ -87,7 +87,7 @@ def train_model(key, model, num_epochs, train_loader, val_loader, lr = 1e-3):
 
     optimizer = optim.AdamW(model.parameters(), lr=lr)
 
-    min_val_loss = np.inf
+    max_val_acc = -np.inf
 
     train_losses = []
     train_accs = []
@@ -115,12 +115,13 @@ def train_model(key, model, num_epochs, train_loader, val_loader, lr = 1e-3):
             optimizer.zero_grad()
             
             loss = F.binary_cross_entropy_with_logits(logits, sd)
-
+        
             loss.backward()
 
             optimizer.step()
 
             train_loss += loss.item()
+            train_acc = calculate_acc(logits, sd)
 
             # There are 120,000,000 examples per epoch, and so validation metrics should be calculated more frequently than 1 epoch
             if batch % val_report_rate == 0:
@@ -134,23 +135,23 @@ def train_model(key, model, num_epochs, train_loader, val_loader, lr = 1e-3):
                 print(f'\nBatch Num {batch+1} \t Val Loss: {val_loss:.5f} \t Val Acc: {val_acc:.5f}')
 
                 # Save best model
-                if val_loss < min_val_loss:
-                    print(f'Val Loss Decreased({min_val_loss:.6f} ---> {val_loss:.6f}) \t Saving The Model')
-                    min_val_loss = val_loss
+                if val_acc > max_val_acc:
+                    print(f'Val Acc Increased({max_val_acc:.6f} ---> {val_acc:.6f}) \t Saving The Model')
+                    max_val_acc = val_acc
 
                     torch.save(model.state_dict(), f'./trained_sdf_models/{key}')
 
             batch+=1 
 
+            train_loss /= len(train_loader)
+            train_acc /= len(train_loader)
 
-        train_loss /= len(train_loader)
-        train_acc /= len(train_loader)
+            train_losses.append(train_loss)
+            train_accs.append(train_acc) 
 
-        train_losses.append(train_loss)
-        train_accs.append(train_acc) 
-
-    model.eval()
+    # model.eval()
     val_loss, val_acc = calculate_val_metrics(model, device, val_loader)
+    # model.train()
     val_losses.append(val_loss)
     val_accs.append(val_acc)
 
@@ -164,7 +165,7 @@ def train_model(key, model, num_epochs, train_loader, val_loader, lr = 1e-3):
     return results
 
 
-num_epochs = 1
+num_epochs = 2
 latent_size = 256
 lr = 1e-3
 
@@ -173,16 +174,12 @@ overall_results = {}
 models = {
     'SD_3L' : {'class' : sd.SD_3L , 'lr' : lr},
     'SD_3L_Upscale32' : {'class' : sd.SD_3L_Upscale32 , 'lr' : lr},
-    'SD_7L_Upscale128' : {'class' : sd.SD_7L_Upscale128 , 'lr' : lr},
     'SD_4L_Upscale128' : {'class' : sd.SD_4L_Upscale128 , 'lr' : lr},
 
     'SD_3L_LR_1e-4' : {'class' : sd.SD_3L , 'lr' : 1e-4},
-    'SD_3L_Upscale32_LR_1e-4' : {'class' : sd.SD_3L_Upscale32 , 'lr' : 1e-4},
-    'SD_7L_Upscale128_LR_1e-4' : {'class' : sd.SD_7L_Upscale128 , 'lr' : 1e-4},
     'SD_4L_Upscale128_LR_1e-4' : {'class' : sd.SD_4L_Upscale128 , 'lr' : 1e-4},
 
     'SD_5L_Upscale256' : {'class' : sd.SD_5L_Upscale256 , 'lr' : lr},
-    'SD_6L_Upscale256' : {'class' : sd.SD_6L_Upscale256 , 'lr' : lr},
     'SD_4L_Upscale256_LatentEncode' : {'class' : sd.SD_4L_Upscale256_LatentEncode , 'lr' : lr},
 }
 

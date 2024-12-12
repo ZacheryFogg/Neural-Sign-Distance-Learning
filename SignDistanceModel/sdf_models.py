@@ -45,9 +45,9 @@ class SD_3L_Upscale32(nn.Module):
         return x
     
 
-class SD_7L_Upscale128(nn.Module):
+class SD_3L_Upscale128(nn.Module):
     def __init__(self, latent_dim, input_dim = 3, hidden_dim = 256):
-        super(SD_7L_Upscale128, self).__init__()
+        super(SD_3L_Upscale128, self).__init__()
         self.fc0 = nn.Linear(input_dim, 32)
         self.fc1 = nn.Linear(32, 64)
         self.fc2 = nn.Linear(64, 128)

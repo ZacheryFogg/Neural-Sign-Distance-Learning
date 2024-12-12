@@ -132,6 +132,7 @@ class SDDataset(Dataset):
         return len(self.file_names) * self.num_xyzs
 
     def __getitem__(self, idx):
+    
         file_idx = math.ceil((idx + 1) / self.num_xyzs) - 1 # Index of specific point cloud: Range 0 - Number of Pointclouds in this plit
         name = self.file_names[file_idx] # File name of the point cloud
 
@@ -140,7 +141,8 @@ class SDDataset(Dataset):
         return {
             'latent_rep' : self.latent_reps[name],
             'xyz' : self.sdfs[name][0][sd_idx,:],
-            'sd' : self.sdfs[name][1][sd_idx]
+            'sd' : self.sdfs[name][1][sd_idx],
+            'name' : name
         }
 
     def compute_latent_reps(self):

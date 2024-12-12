@@ -35,10 +35,12 @@ def visualize_point_cloud(point_cloud):
     """
     o3d.visualization.draw_geometries([point_cloud])
 
-file_path = "ModelNet40/person/train/person_0084.off"  # Replace with your .off file path
+file_path = "Data/ModelNet40/xbox/train/xbox_0084.off"  # Replace with your .off file path
 point_cloud = load_off(file_path)
 
+visualize_point_cloud(point_cloud)
+
 # Visualize the point cloud
-mesh = o3d.io.read_triangle_mesh(file_path)
-sampled_point_cloud = mesh.sample_points_uniformly(number_of_points=10000)
-visualize_point_cloud(sampled_point_cloud)
+# mesh = o3d.io.read_triangle_mesh(file_path)
+# sampled_point_cloud = mesh.sample_points_uniformly(number_of_points=10000)
+# visualize_point_cloud(sampled_point_cloud)

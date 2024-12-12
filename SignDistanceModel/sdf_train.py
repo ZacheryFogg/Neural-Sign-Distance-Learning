@@ -9,14 +9,9 @@ sys.path.append(str(Path.cwd().parent))
 
 from AutoEncoder.encoder import PointCloudAutoEncoder
 from Helpers.SDFDataset import SDFDataset
-<<<<<<< HEAD
-from Helpers.data import PointCloudDataset
-from sdf_models import SDFRegressionModel
-=======
 from Helpers.PointCloudDataset import PointCloudDataset
 from sdf_models import SDFRegressionModel_3L, SDFRegressionModel_5L, SDFRegressionModel_7L, SDFRegressionModel_9L
 from sdf_models import SDFClassificationModel_3L, SDFClassificationModel_5L, SDFClassificationModel_7L, SDFClassificationModel_9L
->>>>>>> 9f132db (Working SDF Dataset, Classifcation + Regression Models, and PointCloudDataset bug fix)
 
 # Device
 if torch.cuda.is_available():
@@ -40,10 +35,6 @@ object_classes=['glass_box']
 # sdf_base_dir='sampled_vdbs/sampled_vdbs'
 sdf_base_dir='../../sampled_points_easier/vdbs'
 point_cloud_base_dir= "../../Data/ModelNet40"
-<<<<<<< HEAD
-dataset = SDFDataset(sdf_base_dir, point_cloud_base_dir, 3072, 'test', object_classes)
-dataloader = DataLoader(dataset, batch_size=64, shuffle=False)
-=======
 train_dataset = SDFDataset(sdf_base_dir, point_cloud_base_dir, point_size, 'train', object_classes)
 test_dataset = SDFDataset(sdf_base_dir, point_cloud_base_dir, point_size, 'test', object_classes)
 
@@ -52,7 +43,6 @@ split_idx = test_size // 2
 indices = list(range(test_size))
 # val_dataset_3072 = Subset(test_dataset, indices[:split_idx])
 # test_dataset_3072 = Subset(test_dataset, indices[split_idx:])
->>>>>>> 9f132db (Working SDF Dataset, Classifcation + Regression Models, and PointCloudDataset bug fix)
 
 # Save Dataset and Load DataLoader
 test_dataset_3072 = torch.load(f'pc_dataset_{point_size}_points_all_objects_test_dataset_3072_order_points_True',  weights_only=False)

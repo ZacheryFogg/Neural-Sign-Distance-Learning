@@ -20,7 +20,7 @@ code/
 
 1. Create a Data folder in the root of the code directory
 
-2. Download the [ModelNet40](https://www.kaggle.com/datasets/balraj98/modelnet40-princeton-3d-object-dataset) and place in Data folder  
+2. Download the [ModelNet40](https://www.kaggle.com/datasets/balraj98/modelnet40-princeton-3d-object-dataset) dataset and place in Data folder  
 
 3. Run the repair script on the data
    ```bash
